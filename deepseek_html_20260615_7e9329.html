@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>برنامه غذایی دیانتی</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: -apple-system, 'Segoe UI', sans-serif;
+    background: #e8f5e9;
+    padding: 12px;
+    direction: rtl;
+  }
+  .box {
+    max-width: 550px;
+    margin: 0 auto;
+  }
+  .header {
+    background: #2c3e50;
+    color: white;
+    padding: 18px;
+    border-radius: 25px;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  .shift-links {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  .shift-link {
+    flex: 1;
+    background: #3498db;
+    color: white;
+    padding: 12px;
+    text-align: center;
+    border-radius: 30px;
+    font-weight: bold;
+    text-decoration: none;
+    display: block;
+  }
+  .shift-link.morning { background: #e67e22; }
+  .shift-link.noon { background: #2980b9; }
+  .shift-link.night { background: #8e44ad; }
+  .meal-card {
+    background: white;
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-right: 5px solid #e67e22;
+  }
+  .meal-time {
+    color: #e67e22;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  .meal-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 5px 0 12px 0;
+  }
+  .food-row {
+    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+  }
+  .food-name {
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  .food-detail {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 6px;
+  }
+  .food-cal {
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 13px;
+  }
+  .summary {
+    background: #2c3e50;
+    color: white;
+    padding: 15px;
+    border-radius: 20px;
+    text-align: center;
+    margin: 15px 0;
+  }
+  .total-cal {
+    font-size: 28px;
+    font-weight: bold;
+    color: #f7c56e;
+  }
+  .day-selector {
+    background: white;
+    padding: 12px;
+    border-radius: 25px;
+    text-align: center;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    align-items: center;
+  }
+  .day-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .day-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+  }
+  .note {
+    background: #fff3e0;
+    padding: 12px;
+    border-radius: 18px;
+    border-right: 4px solid #f39c12;
+    font-size: 12px;
+    margin-top: 15px;
+  }
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: #888;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+<div class="box">
+
+<div class="header">
+  <h2>👮‍♂️ دیانتی جان</h2>
+  <p>برنامه غذایی مخصوص شیفت‌های کاری</p>
+  <p style="font-size: 12px; margin-top: 5px;">⭐ هر غذا با مقدار و کالری کامل | ۱۷۰۰-۱۹۰۰ کالری</p>
+</div>
+
+<div class="shift-links">
+  <a href="#morning" class="shift-link morning">🌅 شیفت صبح</a>
+  <a href="#noon" class="shift-link noon">🌇 شیفت ظهر</a>
+  <a href="#night" class="shift-link night">🌙 شیفت شب</a>
+</div>
+
+<!-- انتخاب روز -->
+<div class="day-selector">
+  <button class="day-btn" onclick="changeDay(-1)">◀</button>
+  <span class="day-name" id="dayName">شنبه</span>
+  <button class="day-btn" onclick="changeDay(1)">▶</button>
+</div>
+
+<div id="content"></div>
+
+<div class="note">
+  ⚠️ <strong>رفیقانه:</strong> سرگیجه یعنی کمبود کالری! حتماً هر وعده یک گزینه رو کامل بخور. آب زیاد بنوش (حداقل ۲ لیتر).
+</div>
+<div class="footer">
+  ✅ با کلیک روی غذاها مقدار و کالری رو ببین | به حرف رفیقت گوش کن ❤️
+</div>
+
+</div>
+
+<script>
+// ========== غذاها با مقدار کامل و کالری ==========
+const foodsDB = {
+  breakfast: [
+    { name: "تخم‌مرغ نیمرو", detail: "۲ عدد تخم‌مرغ + ۱ قاشق روغن زیتون + نمک و فلفل", cal: 220 },
+    { name: "نان بربری", detail: "۱ برس نان بربری (حدود ۸۰ گرم)", cal: 210 },
+    { name: "پنیر محلی", detail: "۵۰ گرم پنیر محلی (به اندازه ۲ قاشق غذاخوری)", cal: 120 },
+    { name: "گردو", detail: "۴ عدد گردو کامل", cal: 110 },
+    { name: "کره حیوانی", detail: "۱ قاشق چایخوری (اختیاری)", cal: 40 },
+    { name: "حلیم", detail: "۱ پیاله متوسط حلیم بدون روغن (۳۰۰ گرم)", cal: 380 },
+    { name: "عدسی", detail: "۱ پیاله عدسی (۲۵۰ گرم) + ۲ قاشق پیاز داغ", cal: 350 },
+    { name: "کاله جوش", detail: "۱ پیاله کاله جوش (نخود + کشک + سیر داغ)", cal: 400 },
+    { name: "فرنی شیر برنج", detail: "۱ پیاله فرنی (برنج + شیر + دارچین)", cal: 340 },
+    { name: "املت سیب‌زمینی", detail: "۲ عدد تخم‌مرغ + ۱ عدد سیب‌زمینی متوسط + گوجه", cal: 380 },
+    { name: "نان سنگک", detail: "۱ برس نان سنگک (حدود ۷۰ گرم)", cal: 180 },
+    { name: "ماست یونانی", detail: "۱۵۰ گرم ماست یونانی ۲٪", cal: 130 }
+  ],
+  lunch: [
+    { name: "خورش قیمه", detail: "گوشت چرخ کرده (۱۰۰ گرم) + سیب‌زمینی + رب گوجه + ۱ کف دست برنج", cal: 560 },
+    { name: "خورش قرمه سبزی", detail: "سبزی (۲۰۰ گرم) + گوشت (۱۰۰ گرم) + لوبیا قرمز + ۱ کف دست برنج", cal: 580 },
+    { name: "چلو کباب کوبیده", detail: "۲ سیخ کباب کوبیده (۱۵۰ گرم) + ۱ کف دست برنج + گوجه کبابی", cal: 550 },
+    { name: "مرغ با آلو", detail: "۱۵۰ گرم ران مرغ بدون پوست + ۵ عدد آلو + ۱ کف دست برنج", cal: 540 },
+    { name: "آش رشته", detail: "۱ پیاله آش رشته (۳۰۰ گرم) + ۲ قاشق نعنا داغ + ۲ عدد نان", cal: 520 },
+    { name: "خورشت بامیه", detail: "بامیه (۱۵۰ گرم) + گوشت (۱۰۰ گرم) + رب + ۱ کف دست برنج", cal: 530 },
+    { name: "کوفته تبریزی", detail: "۱ عدد کوفته متوسط (۲۰۰ گرم) + ۱ عدد نان سنگک + ۳ قاشق ماست", cal: 550 },
+    { name: "قورمه سبزی با مرغ", detail: "سبزی (۲۰۰ گرم) + سینه مرغ (۱۵۰ گرم) + ۱ کف دست برنج", cal: 520 },
+    { name: "زرشک پلو با مرغ", detail: "۱ کف دست برنج زرشکی + ۱۵۰ گرم سینه مرغ", cal: 530 },
+    { name: "ماکارونی با مرغ", detail: "ماکارونی (۶۰ گرم) + سینه مرغ (۱۰۰ گرم) + قارچ", cal: 480 }
+  ],
+  snack: [
+    { name: "سیب", detail: "۱ عدد سیب قرمز یا سبز متوسط", cal: 80 },
+    { name: "بادام", detail: "۱۰ عدد بادام خام", cal: 70 },
+    { name: "دوغ", detail: "۱ لیوان دوغ بدون گاز (۲۰۰ میلی لیتر)", cal: 60 },
+    { name: "خرما", detail: "۲ عدد خرما", cal: 70 },
+    { name: "ماست و خیار", detail: "۱ پیاله ماست (۱۵۰ گرم) + ۱ عدد خیار رنده شده", cal: 110 },
+    { name: "پسته", detail: "۳ عدد پسته خام", cal: 45 },
+    { name: "موز", detail: "۱ عدد موز متوسط", cal: 105 },
+    { name: "تخمه کدو", detail: "۲ قاشق غذاخوری تخمه کدو", cal: 90 },
+    { name: "لبو", detail: "۱ عدد لبو آبپز متوسط", cal: 70 },
+    { name: "شیر", detail: "۱ لیوان شیر کم‌چرب (۲۰۰ میلی لیتر)", cal: 90 },
+    { name: "بیسکویت سبوس‌دار", detail: "۲ عدد بیسکویت سبوس‌دار", cal: 80 },
+    { name: "گلابی", detail: "۱ عدد گلابی متوسط", cal: 65 }
+  ],
+  dinner: [
+    { name: "سوپ جو", detail: "۱ پیاله سوپ جو با مرغ و سبزی (۳۰۰ گرم) + ۲ عدد نان", cal: 360 },
+    { name: "املت گوجه و قارچ", detail: "۳ عدد تخم‌مرغ + ۱ عدد گوجه + ۵۰ گرم قارچ + سالاد شیرازی", cal: 350 },
+    { name: "کتلت سیب‌زمینی", detail: "۲ عدد کتلت خانگی (سیب‌زمینی + تخم‌مرغ) + ۱ عدد نان", cal: 340 },
+    { name: "سیرابی", detail: "۱ پیاله سیرابی آبگوشتی (۳۰۰ گرم) + ۱ عدد نان سنگک", cal: 370 },
+    { name: "ماهی تن", detail: "۱۰۰ گرم تن ماهی در آب نمک + سبزی خوردن + سالاد", cal: 300 },
+    { name: "کوکو سبزی", detail: "۳ عدد تخم‌مرغ + سبزی معطر + ۳ قاشق ماست", cal: 345 },
+    { name: "سالاد مرغ", detail: "۱۰۰ گرم مرغ گریل شده + کاهو + گوجه + سس ماست", cal: 320 },
+    { name: "نیمرو", detail: "۳ عدد تخم‌مرغ نیمرو + ۲ عدد نان + گوجه", cal: 380 },
+    { name: "آبگوشت", detail: "۱ پیاله آبگوشت (گوشت + نخود + سیب‌زمینی) + ۲ عدد نان", cal: 390 }
+  ]
+};
+
+const shifts = {
+  morning: { name: "صبح", meals: [
+    { time: "۵:۰۰ صبح", type: "breakfast", label: "☀️ صبحانه" },
+    { time: "۹:۰۰ صبح", type: "snack", label: "🍎 میان وعده" },
+    { time: "۱۲:۳۰ ظهر", type: "lunch", label: "🌤️ ناهار اصلی" },
+    { time: "۱۹:۰۰ شب", type: "dinner", label: "🌙 شام سبک" }
+  ]},
+  noon: { name: "ظهر", meals: [
+    { time: "۱۱:۳۰ صبح", type: "breakfast", label: "☀️ صبحانه سنگین" },
+    { time: "۱۶:۰۰ عصر", type: "snack", label: "🍎 میان وعده" },
+    { time: "۱۹:۳۰ شب", type: "lunch", label: "🌤️ ناهار سر کار" },
+    { time: "۰۰:۰۰ نیمه شب", type: "dinner", label: "🌙 شام سبک" }
+  ]},
+  night: { name: "شب", meals: [
+    { time: "۱۸:۰۰ عصر", type: "dinner", label: "🌙 شام سنگین" },
+    { time: "۲۲:۰۰ شب", type: "snack", label: "🥒 میان وعده" },
+    { time: "۱:۳۰ بامداد", type: "breakfast", label: "☀️ وعده نیمه شب" },
+    { time: "۴:۳۰ صبح", type: "snack", label: "🍏 میان وعده" },
+    { time: "۸:۰۰ صبح", type: "breakfast", label: "☀️ صبحانه سبک" }
+  ]}
+};
+
+let currentDay = 0;
+const dayNames = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"];
+
+// انتخاب‌های ذخیره شده
+let saved = {
+  morning: { breakfast: 0, lunch: 0, snack: 0, dinner: 0 },
+  noon: { breakfast: 0, lunch: 0, snack: 0, dinner: 0 },
+  night: { breakfast: 0, dinner: 0, snack: 0, breakfast2: 0, snack2: 0 }
+};
+
+try {
+  const loaded = localStorage.getItem("dianati_final");
+  if (loaded) saved = JSON.parse(loaded);
+} catch(e) {}
+
+function saveAll() {
+  localStorage.setItem("dianati_final", JSON.stringify(saved));
+}
+
+function getShiftKey() {
+  let hash = window.location.hash;
+  if (hash.includes("noon")) return "noon";
+  if (hash.includes("night")) return "night";
+  return "morning";
+}
+
+function getSelected(shift, type, index) {
+  if (shift === "morning") return saved.morning[type] || 0;
+  if (shift === "noon") return saved.noon[type] || 0;
+  if (shift === "night") {
+    if (type === "breakfast" && index === 0) return saved.night.breakfast || 0;
+    if (type === "breakfast" && index === 1) return saved.night.breakfast2 || 0;
+    if (type === "snack" && index === 0) return saved.night.snack || 0;
+    if (type === "snack" && index === 1) return saved.night.snack2 || 0;
+    if (type === "dinner") return saved.night.dinner || 0;
+    return 0;
+  }
+  return 0;
+}
+
+function setSelected(shift, type, index, value) {
+  if (shift === "morning") saved.morning[type] = value;
+  else if (shift === "noon") saved.noon[type] = value;
+  else if (shift === "night") {
+    if (type === "breakfast" && index === 0) saved.night.breakfast = value;
+    if (type === "breakfast" && index === 1) saved.night.breakfast2 = value;
+    if (type === "snack" && index === 0) saved.night.snack = value;
+    if (type === "snack" && index === 1) saved.night.snack2 = value;
+    if (type === "dinner") saved.night.dinner = value;
+  }
+  saveAll();
+}
+
+function render() {
+  const shift = getShiftKey();
+  const data = shifts[shift];
+  let html = `<div style="text-align: center; margin-bottom: 15px;">🕐 زمانبندی شیفت ${data.name}</div>`;
+  let totalCal = 0;
+  let snackIdx = 0, breakfastIdx = 0;
+
+  for (let i = 0; i < data.meals.length; i++) {
+    const meal = data.meals[i];
+    const foods = foodsDB[meal.type];
+    const selectedIdx = getSelected(shift, meal.type, (meal.type === "snack" ? snackIdx : (meal.type === "breakfast" ? breakfastIdx : 0)));
+    const food = foods[(selectedIdx + currentDay) % foods.length];
+    totalCal += food.cal;
+
+    html += `<div class="meal-card">
+      <div class="meal-time">⏰ ${meal.time}</div>
+      <div class="meal-title">${meal.label}</div>`;
+
+    // نمایش ۳ گزینه برای هر وعده
+    for (let j = 0; j < 3; j++) {
+      const optFood = foods[(j + currentDay) % foods.length];
+      const isSelected = (j === selectedIdx);
+      html += `<div class="food-row" style="cursor:pointer; ${isSelected ? 'background:#e8f5e9; border-color:#27ae60;' : ''}" onclick="selectMeal('${shift}', '${meal.type}', ${(meal.type === "snack" ? snackIdx : (meal.type === "breakfast" ? breakfastIdx : 0))}, ${j})">
+        <div class="food-name">${optFood.name}</div>
+        <div class="food-detail">📝 ${optFood.detail}</div>
+        <div class="food-cal">🔥 ${optFood.cal} کالری</div>
+      </div>`;
+    }
+    html += `</div>`;
+
+    if (meal.type === "snack") snackIdx++;
+    if (meal.type === "breakfast") breakfastIdx++;
+  }
+
+  html += `<div class="summary">
+    <div>📊 مجموع کالری امروز</div>
+    <div class="total-cal">${totalCal} کالری</div>
+    <div style="font-size: 12px; margin-top: 6px;">🎯 محدوده هدف: ۱۷۰۰-۱۹۰۰ کالری</div>
+  </div>`;
+
+  document.getElementById("content").innerHTML = html;
+  document.getElementById("dayName").innerHTML = dayNames[currentDay];
+}
+
+function selectMeal(shift, type, idx, value) {
+  setSelected(shift, type, idx, value);
+  render();
+}
+
+function changeDay(delta) {
+  currentDay = (currentDay + delta + 7) % 7;
+  render();
+}
+
+window.selectMeal = selectMeal;
+window.changeDay = changeDay;
+
+window.addEventListener("hashchange", () => render());
+render();
+</script>
+</body>
+</html>
